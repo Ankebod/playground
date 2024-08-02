@@ -10,7 +10,6 @@
             }
         },
         "ZivverApiKey": {
-            "defaultValue": "Z1-xxxxxxxxxx",
             "type": "SecureString",
             "metadata": {
                 "description": "Zivver API key generated in admin portal"
@@ -43,7 +42,7 @@
         {
             "type": "Microsoft.Automation/automationAccounts/runbooks",
             "apiVersion": "2023-11-01",
-            "name": "[concat(variables('automationAccountName'), '/Loader')]",
+            "name": "[concat(variables('automationAccountName'), '/ZivverCloudSyncLoader')]",
             "location": "westus",
             "dependsOn": [
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
@@ -89,6 +88,18 @@
             "properties": {
                 "isEncrypted": false,
                 "value": "\"https://app.zivver.com/api\""
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__LOG_LEVEL')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
+            ],
+            "properties": {
+                "isEncrypted": true,
+                "value": "\"INFO\""
             }
         },
         {
