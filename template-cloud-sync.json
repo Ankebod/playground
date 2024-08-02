@@ -102,23 +102,6 @@
                 "isEncrypted": false,
                 "value": "concat('[\"', parameters('Domains'), '\"]')"
             }
-        },
-        {
-            "type": "Microsoft.Resources/deploymentScripts",
-            "apiVersion": "2020-10-01",
-            "name": "runPowerShellInlineWithOutput",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
-            ],
-            "kind": "AzurePowerShell",
-            "properties": {
-                "azPowerShellVersion": "7.2",
-                "scriptContent": "Connect-MgGraph -Scopes AppRoleAssignment.ReadWrite.All,Application.Read.All,RoleManagement.ReadWrite.Directory",
-                "timeout": "PT1H",
-                "cleanupPreference": "OnSuccess",
-                "retentionInterval": "P1D"
-            }
         }
     ]
 }
