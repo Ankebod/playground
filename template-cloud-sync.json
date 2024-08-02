@@ -43,7 +43,7 @@
         {
             "type": "Microsoft.Automation/automationAccounts/runbooks",
             "apiVersion": "2023-11-01",
-            "name": "[variables('automationAccountName'), '/Loader')]",
+            "name": "[concat(variables('automationAccountName'), '/Loader')]",
             "location": "westus",
             "dependsOn": [
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
@@ -58,7 +58,7 @@
         {
             "type": "Microsoft.Automation/automationAccounts/variables",
             "apiVersion": "2023-11-01",
-            "name": "[variables('automationAccountName'), '/CLOUD_SYNC__PERFORM_SYNC')]",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__PERFORM_SYNC')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
             ],
@@ -70,7 +70,7 @@
         {
             "type": "Microsoft.Automation/automationAccounts/variables",
             "apiVersion": "2023-11-01",
-            "name": "[variables('automationAccountName'), '/CLOUD_SYNC__ZIVVER_API_KEY')]",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__ZIVVER_API_KEY')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
             ],
@@ -82,7 +82,7 @@
         {
             "type": "Microsoft.Automation/automationAccounts/variables",
             "apiVersion": "2023-11-01",
-            "name": "[variables('automationAccountName'), '/CLOUD_SYNC__ZIVVER_API_URL')]",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__ZIVVER_API_URL')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
             ],
@@ -94,7 +94,7 @@
         {
             "type": "Microsoft.Automation/automationAccounts/variables",
             "apiVersion": "2023-11-01",
-            "name": "[variables('automationAccountName'), '/CLOUD_SYNC__CLAIMED_DOMAINS')]",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__CLAIMED_DOMAINS')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
             ],
