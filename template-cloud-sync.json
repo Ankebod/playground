@@ -100,7 +100,7 @@
             ],
             "properties": {
                 "isEncrypted": false,
-                "value": "concat('[\"', parameters('Domains'), '\"]')"
+                "value": "[concat('[\"', parameters('Domains'), '\"]')]"
             }
         }
     ]
