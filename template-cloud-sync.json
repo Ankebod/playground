@@ -1,0 +1,105 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "automationAccounts_ZivverCloudSync_claimedDomains": {
+            "defaultValue": "example.nl, company.com",
+            "type": "String",
+            "metadata": {
+                "description": "Domains that need syncing, separated by comma"
+            }
+        },
+        "automationAccounts_ZivverCloudSync_apiKey": {
+            "defaultValue": "Z1-xxxxxxxxxx",
+            "type": "SecureString",
+            "metadata": {
+                "description": "Zivver API key"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Automation/automationAccounts",
+            "apiVersion": "2023-11-01",
+            "name": "[parameters('automationAccounts_ZivverCloudSync_name')]",
+            "location": "westus",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "disableLocalAuth": false,
+                "sku": {
+                    "name": "Basic"
+                },
+                "encryption": {
+                    "keySource": "Microsoft.Automation",
+                    "identity": {}
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/runbooks",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(parameters('automationAccounts_ZivverCloudSync_name'), '/Loader')]",
+            "location": "westus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccounts_ZivverCloudSync_name'))]"
+            ],
+            "properties": {
+                "runbookType": "Python3",
+                "logVerbose": false,
+                "logProgress": false,
+                "logActivityTrace": 0
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(parameters('automationAccounts_ZivverCloudSync_name'), '/CLOUD_SYNC__PERFORM_SYNC')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccounts_ZivverCloudSync_name'))]"
+            ],
+            "properties": {
+                "isEncrypted": false,
+                "value": "false"
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(parameters('automationAccounts_ZivverCloudSync_name'), '/CLOUD_SYNC__ZIVVER_API_KEY')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccounts_ZivverCloudSync_name'))]"
+            ],
+            "properties": {
+                "isEncrypted": true,
+                "value": "[concat('[\"', parameters('automationAccounts_ZivverCloudSync_apiKey'), '\"]')]"
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(parameters('automationAccounts_ZivverCloudSync_name'), '/CLOUD_SYNC__ZIVVER_API_URL')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccounts_ZivverCloudSync_name'))]"
+            ],
+            "properties": {
+                "isEncrypted": false,
+                "value": "\"https://app.zivver.com/api\""
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(parameters('automationAccounts_ZivverCloudSync_name'), '/CLOUD_SYNC__CLAIMED_DOMAINS')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccounts_ZivverCloudSync_name'))]"
+            ],
+            "properties": {
+                "isEncrypted": false,
+                "value": "concat('[\"', parameters('automationAccounts_ZivverCloudSync_claimedDomains'), '\"]')"
+            }
+        }
+    ]
+}
