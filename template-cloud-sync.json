@@ -3,21 +3,28 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Domains": {
-            "defaultValue": "example.nl, company.com",
             "type": "String",
             "metadata": {
-                "description": "Domains that need syncing, separated by comma"
+                "description": "Domain(s) in Exchange that will be INCLUDED in the sync, separated by comma"
+            }
+        },
+        "Filter": {
+            "type": "String",
+            "metadata": {
+                "defaultValue" : " ",
+                "description": "Email(s) or domain(s) in Zivver that should be EXCLUDED from sync, separated by comma"
             }
         },
         "ZivverApiKey": {
             "type": "SecureString",
             "metadata": {
-                "description": "Zivver API key generated in admin portal"
+                "description": "Zivver API key generated at app.zivver.com/organization/api-keys"
             }
         }
     },
     "variables": {
-        "automationAccountName" : "ZivverCloudSync"
+        "automationAccountName" : "ZivverCloudSync",
+        "loaderUri" : "https://downloads.zivver.com/cloudsync/loader.py"
     },
     "resources": [
         {
@@ -51,7 +58,10 @@
                 "runbookType": "Python3",
                 "logVerbose": false,
                 "logProgress": false,
-                "logActivityTrace": 0
+                "logActivityTrace": 0,
+                "publishContentLink": {
+                    "uri": "[variables('loaderUri')]"
+                  }
             }
         },
         {
@@ -75,7 +85,7 @@
             ],
             "properties": {
                 "isEncrypted": true,
-                "value": "[concat('[\"', parameters('ZivverApiKey'), '\"]')]"
+                "value": "[concat('\"',parameters('ZivverApiKey'),'\"')]"
             }
         },
         {
@@ -111,7 +121,19 @@
             ],
             "properties": {
                 "isEncrypted": false,
-                "value": "[concat('[\"', parameters('Domains'), '\"]')]"
+                "value": "[concat('\"',parameters('Domains'),'\"')]"
+            }
+        },        
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__TARGET_FILTER')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
+            ],
+            "properties": {
+                "isEncrypted": false,
+                "value": "[concat('\"',parameters('Filter'),'\"')]"
             }
         }
     ]
