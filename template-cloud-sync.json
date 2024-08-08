@@ -2,23 +2,23 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Domains": {
-            "type": "String",
-            "metadata": {
-                "description": "Domain(s) in Exchange that will be INCLUDED in the sync, separated by comma"
-            }
-        },
-        "Filter": {
-            "type": "String",
-            "metadata": {
-                "defaultValue" : " ",
-                "description": "Email(s) or domain(s) in Zivver that should be EXCLUDED from sync, separated by comma"
-            }
-        },
         "ZivverApiKey": {
             "type": "SecureString",
             "metadata": {
-                "description": "Zivver API key generated at app.zivver.com/organization/api-keys"
+                "description": "Zivver API key generated in the admin portal (app.zivver.com/organization/api-keys)"
+            }
+        },
+        "IncludedDomains": {
+            "type": "String",
+            "metadata": {
+                "description": "Domain(s) that should be INCLUDED in the sync, separated by comma"
+            }
+        },
+        "TargetFilter": {
+            "type": "String",
+            "defaultValue" : " ",
+            "metadata": {
+                "description": "Email(s) or domain(s) in Zivver that should be EXCLUDED from the sync, separated by comma"
             }
         }
     },
@@ -121,7 +121,7 @@
             ],
             "properties": {
                 "isEncrypted": false,
-                "value": "[concat('\"',parameters('Domains'),'\"')]"
+                "value": "[concat('\"',parameters('IncludedDomains'),'\"')]"
             }
         },        
         {
@@ -133,7 +133,7 @@
             ],
             "properties": {
                 "isEncrypted": false,
-                "value": "[concat('\"',parameters('Filter'),'\"')]"
+                "value": "[concat('\"',parameters('TargetFilter'),'\"')]"
             }
         }
     ]
