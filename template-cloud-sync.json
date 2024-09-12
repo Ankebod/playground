@@ -1,29 +1,52 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+    "contentVersion": "1.0.1.0",
     "parameters": {
         "ZivverApiKey": {
             "type": "SecureString",
             "metadata": {
-                "description": "Zivver API key generated in the admin portal (app.zivver.com/organization/api-keys)"
+                "description": "Zivver API key generated in the admin portal (app.zivver.com/admin/api-keys)."
             }
         },
         "IncludedDomains": {
             "type": "String",
             "metadata": {
-                "description": "Domain(s) that should be INCLUDED in the sync, separated by comma"
+                "description": "Add all claimed domains in Zivver (app.zivver.com/admin/domains) separated by comma (e.g. domain.com, example.nl)."
+            }
+        },
+        "DailyStartTimeUTC": {
+            "type": "string",
+            "allowedValues": [
+                "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "20:00", "21:00", "22:00", "23:00"
+              ],
+            "metadata": {
+                "description": "Choose the start time (in UTC) of the daily sync outside of office hours."
             }
         },
         "TargetFilter": {
             "type": "String",
             "defaultValue" : " ",
             "metadata": {
-                "description": "Email(s) or domain(s) in Zivver that should be EXCLUDED from the sync, separated by comma"
+                "description": "Specific mailboxes or domains entered will not be changed in Zivver. Use if your Zivver admin account does not exist in the Exchange Online tenant. Separate values by comma (e.g. admin@it-supplier.com, externaldomain.uk)."
+            }
+        },
+        "EmailReportSender": {
+            "type": "String",
+            "defaultValue" : " ",
+            "metadata": {
+                "description": "Enter an email address for the sender of the email report. It should be a mailbox in the tenant. Save the address in a notepad to use it later when setting up the permissions."
+            }
+        },
+        "EmailReportRecipients": {
+            "type": "String",
+            "defaultValue" : " ",
+            "metadata": {
+                "description": "Enter email address(es) for the recipient(s) of the email report. Those can also be outside of the tenant. Separate values by comma."
             }
         }
     },
     "variables": {
-        "automationAccountName" : "ZivverCloudSync",
+        "automationAccountName" : "ZivverCloudSyncTCdemo",
         "loaderUri" : "https://downloads.zivver.com/cloudsync/loader.py"
     },
     "resources": [
@@ -31,7 +54,7 @@
             "type": "Microsoft.Automation/automationAccounts",
             "apiVersion": "2023-11-01",
             "name": "[variables('automationAccountName')]",
-            "location": "westus",
+            "location": "westeurope",
             "identity": {
                 "type": "SystemAssigned"
             },
@@ -50,7 +73,7 @@
             "type": "Microsoft.Automation/automationAccounts/runbooks",
             "apiVersion": "2023-11-01",
             "name": "[concat(variables('automationAccountName'), '/ZivverCloudSyncLoader')]",
-            "location": "westus",
+            "location": "westeurope",
             "dependsOn": [
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
             ],
@@ -74,6 +97,18 @@
             "properties": {
                 "isEncrypted": false,
                 "value": "false"
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__TELEMETRY')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
+            ],
+            "properties": {
+                "isEncrypted": false,
+                "value": "true"
             }
         },
         {
@@ -108,7 +143,7 @@
                 "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
             ],
             "properties": {
-                "isEncrypted": true,
+                "isEncrypted": false,
                 "value": "\"INFO\""
             }
         },
@@ -134,6 +169,64 @@
             "properties": {
                 "isEncrypted": false,
                 "value": "[concat('\"',parameters('TargetFilter'),'\"')]"
+            }
+        },       
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__EMAIL_REPORT_SENDER')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
+            ],
+            "properties": {
+                "isEncrypted": false,
+                "value": "[concat('\"',parameters('EmailReportSender'),'\"')]"
+            }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(variables('automationAccountName'), '/CLOUD_SYNC__EMAIL_REPORT_RECIPIENTS')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
+            ],
+            "properties": {
+                "isEncrypted": false,
+                "value": "[concat('\"',parameters('EmailReportRecipients'),'\"')]"
+            }
+        },
+        {
+          "name": "[concat(variables('automationAccountName'), '/ZivverCloudSyncSchedule')]",
+          "type": "microsoft.automation/automationAccounts/schedules",
+          "apiVersion": "2015-10-31",
+          "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
+        ],
+          "properties": {
+            "description": "Daily synchronization of accounts from Exchange Online to Zivver.",
+            "startTime": "[dateTimeAdd(concat(parameters('DailyStartTimeUTC'), ':00Z'), 'P1D')]",
+            "isEnabled": "false",
+            "timeZone" : "UTC",
+            "frequency": "Day",
+            "interval" : "1"
+          }
+        },
+        {
+            "type": "Microsoft.Automation/automationAccounts/jobSchedules",
+            "apiVersion": "2023-11-01",
+            "name": "[concat(variables('automationAccountName'), '/', guid(variables('automationAccountName')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', variables('automationAccountName'))]",
+                "ZivverCloudSyncSchedule",
+                "ZivverCloudSyncLoader"
+            ],
+            "properties": {
+                "runbook": {
+                    "name": "ZivverCloudSyncLoader"
+                },
+                "schedule": {
+                    "name": "ZivverCloudSyncSchedule"
+                }
             }
         }
     ]
