@@ -1,0 +1,84 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_sentinel_integration_name": {
+            "defaultValue": "sentinel-integration",
+            "type": "String"
+        },
+        "connections_azureloganalyticsdatacollector_externalid": {
+            "defaultValue": "/subscriptions/fa294003-533e-4a54-a92d-9a9e7e378257/resourceGroups/test_anke/providers/Microsoft.Web/connections/azureloganalyticsdatacollector",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_sentinel_integration_name')]",
+            "location": "westeurope",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "HTTP_Webhook_trigger": {
+                            "type": "HttpWebhook",
+                            "inputs": {
+                                "subscribe": {
+                                    "method": "POST",
+                                    "uri": "https://webhook.site/8a4871ae-b555-495e-b891-b2b8c4999286",
+                                    "body": "@listCallbackUrl()"
+                                },
+                                "unsubscribe": {
+                                    "body": "Unsubscribe"
+                                },
+                                "callbackUrl": "@{triggerOutputs()['subscribeUrl']}"
+                            },
+                            "description": "Test webhook"
+                        }
+                    },
+                    "actions": {
+                        "Send_Data": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azureloganalyticsdatacollector']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": "@triggerOutputs()?['body']",
+                                "headers": {
+                                    "Log-Type": "Test"
+                                },
+                                "path": "/api/logs"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azureloganalyticsdatacollector": {
+                                "id": "/subscriptions/fa294003-533e-4a54-a92d-9a9e7e378257/providers/Microsoft.Web/locations/westeurope/managedApis/azureloganalyticsdatacollector",
+                                "connectionId": "[parameters('connections_azureloganalyticsdatacollector_externalid')]",
+                                "connectionName": "azureloganalyticsdatacollector"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
