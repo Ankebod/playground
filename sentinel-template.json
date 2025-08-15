@@ -2,22 +2,24 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "workflows_sentinel_integration_name": {
-            "defaultValue": "sentinel-integration",
-            "type": "String"
-        },
-        "connections_azureloganalyticsdatacollector_externalid": {
-            "defaultValue": "/subscriptions/fa294003-533e-4a54-a92d-9a9e7e378257/resourceGroups/test_anke/providers/Microsoft.Web/connections/azureloganalyticsdatacollector",
-            "type": "String"
+        "logAnalyticsWorkspaceID": {
+            "defaultValue" : "",
+            "type" : "string",
+            "metadata": {
+                "description": "Enter the Workspace ID of the Log Analytics Workspace that you want to connect. Ensure the workspace is in the chosen Resource Group."
+            }
         }
     },
-    "variables": {},
+    "variables": {
+        "workflowName" : "pubsub-sentinel-app",
+        "location" : "[resourceGroup().location]"
+    },
     "resources": [
         {
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
-            "name": "[parameters('workflows_sentinel_integration_name')]",
-            "location": "westeurope",
+            "name": "[variables('workflowName')]",
+            "location": "[variables('location')]",
             "properties": {
                 "state": "Enabled",
                 "definition": {
@@ -30,20 +32,9 @@
                         }
                     },
                     "triggers": {
-                        "HTTP_Webhook_trigger": {
-                            "type": "HttpWebhook",
-                            "inputs": {
-                                "subscribe": {
-                                    "method": "POST",
-                                    "uri": "https://webhook.site/8a4871ae-b555-495e-b891-b2b8c4999286",
-                                    "body": "@listCallbackUrl()"
-                                },
-                                "unsubscribe": {
-                                    "body": "Unsubscribe"
-                                },
-                                "callbackUrl": "@{triggerOutputs()['subscribeUrl']}"
-                            },
-                            "description": "Test webhook"
+                        "Webhook_Consumer": {
+                            "type": "Request",
+                            "kind": "Http"
                         }
                     },
                     "actions": {
@@ -57,9 +48,9 @@
                                     }
                                 },
                                 "method": "post",
-                                "body": "@triggerOutputs()?['body']",
+                                "body": "@{triggerBody()}",
                                 "headers": {
-                                    "Log-Type": "Test"
+                                    "Log-Type": "Kiteworks"
                                 },
                                 "path": "/api/logs"
                             }
@@ -71,8 +62,8 @@
                     "$connections": {
                         "value": {
                             "azureloganalyticsdatacollector": {
-                                "id": "/subscriptions/fa294003-533e-4a54-a92d-9a9e7e378257/providers/Microsoft.Web/locations/westeurope/managedApis/azureloganalyticsdatacollector",
-                                "connectionId": "[parameters('connections_azureloganalyticsdatacollector_externalid')]",
+                                "id": "[concat('/subscriptions/', parameters('logAnalyticsWorkspaceID'), '/providers/Microsoft.Web/locations/', variables('location'), '/managedApis/azureloganalyticsdatacollector')]",
+                                "connectionId": "[concat('/subscriptions/', parameters('logAnalyticsWorkspaceID'), '/resourceGroups/test_anke/providers/Microsoft.Web/connections/azureloganalyticsdatacollector')]",
                                 "connectionName": "azureloganalyticsdatacollector"
                             }
                         }
