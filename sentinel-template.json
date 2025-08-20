@@ -30,37 +30,8 @@
                             "kind": "Http"
                         }
                     },
-                    "actions": {
-                        "Send_Data": {
-                            "runAfter": {},
-                            "type": "ApiConnection",
-                            "inputs": {
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azureloganalyticsdatacollector']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "body": "@{triggerBody()}",
-                                "headers": {
-                                    "Log-Type": "Kiteworks"
-                                },
-                                "path": "/api/logs"
-                            }
-                        }
-                    },
+                    "actions": {},
                     "outputs": {}
-                },
-                "parameters": {
-                    "$connections": {
-                        "value": {
-                            "azureloganalyticsdatacollector": {
-                                "id": "[concat('/subscriptions/', variables('subscriptionId'), '/providers/Microsoft.Web/locations/', variables('location'), '/managedApis/azureloganalyticsdatacollector')]",
-                                "connectionId": "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/test_anke/providers/Microsoft.Web/connections/azureloganalyticsdatacollector')]",
-                                "connectionName": "azureloganalyticsdatacollector"
-                            }
-                        }
-                    }
                 }
             }
         }
