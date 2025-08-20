@@ -35,11 +35,6 @@
                             "runAfter": {},
                             "type": "ApiConnection",
                             "inputs": {
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azureloganalyticsdatacollector']['connectionId']"
-                                    }
-                                },
                                 "method": "post",
                                 "body": "@{triggerBody()}",
                                 "headers": {
@@ -52,14 +47,6 @@
                     "outputs": {}
                 },
                 "parameters": {
-                    "$connections": {
-                        "value": {
-                            "azureloganalyticsdatacollector": {
-                                "id": "[concat('/subscriptions/', variables('subscriptionId'), '/providers/Microsoft.Web/locations/', variables('location'), '/managedApis/azureloganalyticsdatacollector')]",
-                                "connectionId": "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/test_anke/providers/Microsoft.Web/connections/azureloganalyticsdatacollector')]",
-                                "connectionName": "azureloganalyticsdatacollector"
-                            }
-                        }
                     }
                 }
             }
