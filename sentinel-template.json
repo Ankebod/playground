@@ -1,16 +1,9 @@
-{
+
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-        "logAnalyticsWorkspaceID": {
-            "defaultValue" : "",
-            "type" : "string",
-            "metadata": {
-                "description": "Enter the Workspace ID of the Log Analytics Workspace that you want to connect. Ensure the workspace is in the chosen Resource Group."
-            }
-        }
-    },
+    "parameters": {},
     "variables": {
+        "subscriptionId": "[subscription().subscriptionId]",
         "workflowName" : "pubsub-sentinel-app",
         "location" : "[resourceGroup().location]"
     },
@@ -62,8 +55,8 @@
                     "$connections": {
                         "value": {
                             "azureloganalyticsdatacollector": {
-                                "id": "[concat('/subscriptions/', parameters('logAnalyticsWorkspaceID'), '/providers/Microsoft.Web/locations/', variables('location'), '/managedApis/azureloganalyticsdatacollector')]",
-                                "connectionId": "[concat('/subscriptions/', parameters('logAnalyticsWorkspaceID'), '/resourceGroups/test_anke/providers/Microsoft.Web/connections/azureloganalyticsdatacollector')]",
+                                "id": "[concat('/subscriptions/', variables('subscriptionId'), '/providers/Microsoft.Web/locations/', variables('location'), '/managedApis/azureloganalyticsdatacollector')]",
+                                "connectionId": "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/test_anke/providers/Microsoft.Web/connections/azureloganalyticsdatacollector')]",
                                 "connectionName": "azureloganalyticsdatacollector"
                             }
                         }
